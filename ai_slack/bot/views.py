@@ -18,10 +18,7 @@ def send_message(message , channel_id=None):
     "channel": f"{channel_id}",
     "text": message
 }
-    # {
-    # "channel": "YOUR_CHANNEL_ID",
-    # "text": "Hello world :tada:"
-    # }
+
     return requests.post(url , json=data , headers=headers)
 
 @csrf_exempt
@@ -50,4 +47,13 @@ def slack_events_endpoint(request):
             return HttpResponse("not allowed ", status=400)
         return HttpResponse(challenge, status=200)
     
+
+    if data_type == "event_callback":
+        event = json_data.get('event') or {}
+        msg_text = event.get('text')
+        channel_id = event.get('channel')
+        # user_id = event.get('user')
+        r=send_message(msg_text, channel_id=channel_id)
+        return HttpResponse("success", status=r.status_code)
+
     return HttpResponse("SUCCESS", status=200)
