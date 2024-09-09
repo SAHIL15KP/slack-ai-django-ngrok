@@ -26,7 +26,7 @@ DEBUG = True
 # settings.py
 
 ALLOWED_HOSTS = ['127.0.0.1', 'localhost', '.ngrok-free.app']
-CSRF_TRUSTED_ORIGINS = ['https://2cc0-223-178-211-243.ngrok-free.app']
+CSRF_TRUSTED_ORIGINS = ['https://ebb9-223-178-211-225.ngrok-free.app']
 
 # Application definition
 
