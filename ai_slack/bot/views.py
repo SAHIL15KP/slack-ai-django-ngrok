@@ -1,24 +1,26 @@
+import requests
 import json 
 from django.http import HttpResponse 
 from django.views.decorators.csrf import csrf_exempt 
 from django.views.decorators.http import require_POST 
-# Create your views here.
 import helpers
-import requests
-SLACK_BOT_OAUTH_TOKEN = helpers.config('slack_bot_oauth_token',default=None , cast=str)
+from pprint import pprint 
+SLACK_BOT_OAUTH_TOKEN = helpers.config('SLACK_BOT_OAUTH_TOKEN',default=None , cast=str)
 
-def send_message(message , channel_id=None):
+def send_message(message , channel_id=None, user_id=None):
     url = "https://slack.com/api/chat.postMessage"
     headers = {
     "Content-Type": "application/json; charset=utf-8",
     "Authorization": f"Bearer {SLACK_BOT_OAUTH_TOKEN}",
     "Accept":"application/json"
     }
+    if user_id is not None:
+        message = f"<@{user_id}> {message}"
+
     data = {
     "channel": f"{channel_id}",
-    "text": message
+    "text": f"{message}".strip()
 }
-
     return requests.post(url , json=data , headers=headers)
 
 @csrf_exempt
@@ -32,7 +34,8 @@ def slack_events_endpoint(request):
 
     data_type = json_data.get('type')
 
-    print(data_type, json_data)
+    print(data_type, json_data, json_data.keys())
+    
     allowed_data_type = [
         'url-verification',
         'event_callback'
@@ -47,13 +50,16 @@ def slack_events_endpoint(request):
             return HttpResponse("not allowed ", status=400)
         return HttpResponse(challenge, status=200)
     
-
-    if data_type == "event_callback":
+    elif data_type == "event_callback":
         event = json_data.get('event') or {}
-        msg_text = event.get('text')
+        pprint(event)
+        try:
+            msg_text = event['blocks'][0]['elements'][0]['elements'][1]['text']
+        except:
+            msg_text = event.get('text')
         channel_id = event.get('channel')
-        # user_id = event.get('user')
-        r=send_message(msg_text, channel_id=channel_id)
+        user_id = event.get('user')
+        r=send_message(msg_text, channel_id=channel_id,user_id=user_id)
         return HttpResponse("success", status=r.status_code)
 
     return HttpResponse("SUCCESS", status=200)
