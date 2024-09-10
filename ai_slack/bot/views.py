@@ -6,6 +6,7 @@ from django.views.decorators.http import require_POST
 import helpers
 from pprint import pprint
 import slacky
+from .tasks import slack_message_task
 
 SLACK_BOT_OAUTH_TOKEN = helpers.config('SLACK_BOT_OAUTH_TOKEN', default=None, cast=str)
 
@@ -20,7 +21,6 @@ def slack_events_endpoint(request):
         return HttpResponse("Invalid JSON", status=400)
 
     data_type = json_data.get('type')
-    print(data_type, json_data, json_data.keys())
 
     allowed_data_type = [
         'url_verification',
@@ -38,7 +38,6 @@ def slack_events_endpoint(request):
 
     elif data_type == "event_callback":
         event = json_data.get('event') or {}
-        # pprint(event)
         try:
             msg_text = event['blocks'][0]['elements'][0]['elements'][1]['text']
         except:
@@ -47,7 +46,7 @@ def slack_events_endpoint(request):
         user_id = event.get('user')
         msg_ts = event.get('ts')
         thread_ts = event.get('thread_ts') or msg_ts
-        r = slacky.send_message(msg_text, channel_id=channel_id, user_id=user_id, thread_ts=thread_ts)
-        return HttpResponse("success", status=r.status_code)
+        slack_message_task.delay(msg_text, channel_id=channel_id, user_id=user_id, thread_ts=thread_ts)
+        return HttpResponse("success", status=200)
 
     return HttpResponse("SUCCESS", status=200)

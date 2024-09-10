@@ -1,1 +1,5 @@
 ss
+
+celery -A ai_slack worker --loglevel=info
+
+celery -A ai_slack beat --loglevel=info
