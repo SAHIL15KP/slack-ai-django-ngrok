@@ -69,7 +69,7 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = 'ai_slack.wsgi.application'
+WSGI_APPLICATION = 'ai_slack.wsgi.application'  
 
 
 # Database
@@ -124,7 +124,9 @@ STATIC_URL = 'static/'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 CELERY_RESULT_BACKEND = 'django-db'
-CELERY_BROKER_URL = helpers.config('CELERY_BROKER_URL',default=None, cast=str)
+# CELERY_BROKER_URL = helpers.config('CELERY_BROKER_URL',default=None, cast=str)
+
+CELERY_BROKER_URL="rediss://default:AXa2AAIjcDEwOTk0NjllMTJhNmU0NmY3ODVhNGYxN2NjMDYyOTEyNHAxMA@proper-bass-53148.upstash.io:6379?ssl_cert_reqs=CERT_NONE"
 
 CELERY_BEAT_SCHEDULER = 'django_celery_beat.schedulers.DatabaseScheduler'
 
